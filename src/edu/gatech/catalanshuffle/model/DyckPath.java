@@ -1,5 +1,11 @@
 package edu.gatech.catalanshuffle.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class DyckPath extends CatalanModel {
 	
 	private boolean[] cur;
@@ -66,16 +72,17 @@ public class DyckPath extends CatalanModel {
 		return true;
 	}
 	
+	public double testRandomness(int itr) {
+		Map<List<Boolean>, Integer> freq = new HashMap<>();
+		long cNumber = catalanNumber();
+		for (long i = 0; i < cNumber * itr; i++) {
+			shuffleOnce();
+			List<Boolean> res = Arrays.asList(cur);
+		}
+	}
+	
 	public String toString() {
-		if (n == 0) {
-			return "";
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.append(cur[0]);
-		for (int i = 1; i < cur.length; i++) {
-			sb.append(" ").append(cur[i]);
-		}
-		return sb.toString();
+		return Arrays.toString(cur);
 	}
 	
 	private void swap(int index1, int index2) {
