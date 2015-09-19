@@ -1,18 +1,23 @@
 package edu.gatech.catalanshuffle.model;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.stat.inference.ChiSquareTest;
+
 public class DyckPath extends CatalanModel {
 	
-	private boolean[] cur;
+	private Boolean[] cur;
+	
+	public DyckPath(int n) {
+		this(n, true);
+	}
 	
 	public DyckPath(int n, boolean randomInit) {
-		super(n, randomInit);
-		this.cur = new boolean[2 * n];
+		super(n);
+		this.cur = new Boolean[2 * n];
 		if (randomInit) {
 			int posi = 0;
 			int diff = 0;
@@ -78,7 +83,21 @@ public class DyckPath extends CatalanModel {
 		for (long i = 0; i < cNumber * itr; i++) {
 			shuffleOnce();
 			List<Boolean> res = Arrays.asList(cur);
+			if (freq.containsKey(res)) {
+				freq.put(res, freq.get(res) + 1);
+			}
+			else {
+				freq.put(res, 1);
+			}
 		}
+		long[] observed = new long[(int)cNumber];
+		int idx = 0;
+		for (Integer l : freq.values()) {
+			observed[idx] = l;
+		}
+		double[] expected = new double[(int)cNumber];
+		Arrays.fill(expected, itr);
+		return new ChiSquareTest().chiSquareTest(expected, observed);
 	}
 	
 	public String toString() {

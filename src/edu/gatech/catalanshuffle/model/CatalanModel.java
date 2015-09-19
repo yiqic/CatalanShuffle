@@ -10,10 +10,6 @@ public abstract class CatalanModel {
 	public static final Random rand = new Random();
 	
 	public CatalanModel(int n) {
-		this(n, true);
-	}
-	
-	public CatalanModel(int n, boolean randomInit) {
 		this.n = n;
 	}
 	
