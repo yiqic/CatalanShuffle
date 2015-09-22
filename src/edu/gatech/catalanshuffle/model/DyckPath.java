@@ -53,8 +53,13 @@ public class DyckPath extends CatalanModel {
 		while (!satisfy) {
 			index1 = rand.nextInt(2 * n);
 			index2 = rand.nextInt(2 * n);
+			if (index1 > index2) {
+				int tmp = index1;
+				index1 = index2;
+				index2 = tmp;
+			}
 			swap(index1, index2);
-			if (!(satisfy = checkCatalanProperty())) {
+			if (!(satisfy = (cur[index1] || (!cur[index2]) || checkCatalanProperty()))) {
 				swap(index1, index2);
 			}
 		}
@@ -77,11 +82,12 @@ public class DyckPath extends CatalanModel {
 		return true;
 	}
 	
-	public double testRandomness(int itr) {
+	public long[] distributionExperiment(long trials, int shuffleItr) {
+		Boolean[] start = cur.clone();
 		Map<List<Boolean>, Integer> freq = new HashMap<>();
 		long cNumber = catalanNumber();
-		for (long i = 0; i < cNumber * itr; i++) {
-			shuffleOnce();
+		for (long i = 0; i < trials; i++) {
+			shuffle(shuffleItr);
 			List<Boolean> res = Arrays.asList(cur);
 			if (freq.containsKey(res)) {
 				freq.put(res, freq.get(res) + 1);
@@ -89,14 +95,31 @@ public class DyckPath extends CatalanModel {
 			else {
 				freq.put(res, 1);
 			}
+			cur = start.clone();
 		}
+		
 		long[] observed = new long[(int)cNumber];
 		int idx = 0;
 		for (Integer l : freq.values()) {
 			observed[idx] = l;
+			idx++;
 		}
+		return observed;
+	}
+	
+	public double testUniformDistribution(int expectedNum, int shuffleItr, boolean report) {
+		long cNumber = catalanNumber();
+		long[] observed = distributionExperiment(cNumber * expectedNum, shuffleItr);
+		
 		double[] expected = new double[(int)cNumber];
-		Arrays.fill(expected, itr);
+		Arrays.fill(expected, expectedNum);
+		if (report) {
+			System.out.println("catalan number: " + cNumber);
+			System.out.println("observed: ");
+			System.out.println(Arrays.toString(observed));
+			System.out.println("expected: ");
+			System.out.println(Arrays.toString(expected));
+		}
 		return new ChiSquareTest().chiSquareTest(expected, observed);
 	}
 	

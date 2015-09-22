@@ -7,10 +7,15 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 public abstract class CatalanModel {
 	
 	protected final int n;
+	
 	public static final Random rand = new Random();
 	
 	public CatalanModel(int n) {
 		this.n = n;
+	}
+	
+	public int getN() {
+		return n;
 	}
 	
 	public long catalanNumber() {
@@ -25,6 +30,6 @@ public abstract class CatalanModel {
 	
 	public abstract void shuffleOnce();
 	public abstract boolean checkCatalanProperty();
-	public abstract double testRandomness(int itr);
+	public abstract double testUniformDistribution(int expectedNum, int shuffleItr, boolean report);
 
 }
