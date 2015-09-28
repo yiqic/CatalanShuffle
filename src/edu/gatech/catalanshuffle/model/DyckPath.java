@@ -1,5 +1,6 @@
 package edu.gatech.catalanshuffle.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -10,15 +11,16 @@ import org.apache.commons.math3.stat.inference.ChiSquareTest;
 public class DyckPath extends CatalanModel {
 	
 	private Boolean[] cur;
+	private Map<Integer, Integer>[] dist;
 	
 	public DyckPath(int n) {
-		this(n, true);
+		this(n, InitType.RANDOM);
 	}
 	
-	public DyckPath(int n, boolean randomInit) {
+	public DyckPath(int n, InitType initType) {
 		super(n);
 		this.cur = new Boolean[2 * n];
-		if (randomInit) {
+		if (initType == InitType.RANDOM) {
 			int posi = 0;
 			int diff = 0;
 			for (int i = 0; i < 2 * n; i++) {
@@ -40,9 +42,34 @@ public class DyckPath extends CatalanModel {
 				}
 			}
 		}
-		else {
+		else if (initType == InitType.TOP) {
 			for (int i = 0; i < n; i++) {
 				cur[i] = true;
+				cur[n + i] = false;
+			}
+		}
+		else {
+			for (int i = 0; i < n; i++) {
+				cur[2 * i] = true;
+				cur[2 * i + 1] = false;
+			}
+		}
+		loadTestStatisticsDist();
+	}
+	
+	public void loadTestStatisticsDist() {
+		List<Boolean[]> all = generateAllCatalanStructures();
+		dist = new Map[TestStatistics.values().length];
+		for (TestStatistics ts : TestStatistics.values()) {
+			dist[ts.ordinal()] = new HashMap<>();
+			for (Boolean[] b : all) {
+				int value = testStatisticsValue(ts, b);
+				if (dist[ts.ordinal()].containsKey(value)) {
+					dist[ts.ordinal()].put(value, dist[ts.ordinal()].get(value)+1);
+				}
+				else {
+					dist[ts.ordinal()].put(value, 1);
+				}
 			}
 		}
 	}
@@ -82,10 +109,17 @@ public class DyckPath extends CatalanModel {
 		return true;
 	}
 	
-	public long[] distributionExperiment(long trials, int shuffleItr) {
+	public List<int[][]> distributionExperiment(int expectedNum, int shuffleItr) {
+		long cNumber = catalanNumber();
+		long trials = cNumber * expectedNum;
+		List<int[][]> dis = new ArrayList<>();
+		
 		Boolean[] start = cur.clone();
 		Map<List<Boolean>, Integer> freq = new HashMap<>();
-		long cNumber = catalanNumber();
+		Map<Integer, Integer>[] tsFreq = new Map[TestStatistics.values().length];
+		for (TestStatistics ts : TestStatistics.values()) {
+			tsFreq[ts.ordinal()] = new HashMap<>();
+		}
 		for (long i = 0; i < trials; i++) {
 			shuffle(shuffleItr);
 			List<Boolean> res = Arrays.asList(cur);
@@ -95,41 +129,150 @@ public class DyckPath extends CatalanModel {
 			else {
 				freq.put(res, 1);
 			}
+			for (TestStatistics ts : TestStatistics.values()) {
+				int value = testStatisticsValue(ts, cur);
+				if (tsFreq[ts.ordinal()].containsKey(value)) {
+					tsFreq[ts.ordinal()].put(value, tsFreq[ts.ordinal()].get(value)+1);
+				}
+				else {
+					tsFreq[ts.ordinal()].put(value, 1);
+				}
+			}
 			cur = start.clone();
 		}
 		
-		long[] observed = new long[(int)cNumber];
+		int[][] data = new int[2][(int)cNumber];
 		int idx = 0;
 		for (Integer l : freq.values()) {
-			observed[idx] = l;
+			data[0][idx] = l;
 			idx++;
 		}
-		return observed;
+		
+		Arrays.fill(data[1], expectedNum);
+		dis.add(data);
+		
+		for (TestStatistics ts : TestStatistics.values()) {
+			data = new int[2][dist[ts.ordinal()].size()];
+			int i = 0;
+			for (int val : dist[ts.ordinal()].keySet()) {
+				data[0][i] = tsFreq[ts.ordinal()].containsKey(val) ? tsFreq[ts.ordinal()].get(val) : 0;
+				data[1][i] = dist[ts.ordinal()].get(val) * expectedNum;
+				i++;
+			}
+			dis.add(data);
+		}
+		return dis;
 	}
 	
-	public double testUniformDistribution(int expectedNum, int shuffleItr, boolean report) {
-		long cNumber = catalanNumber();
-		long[] observed = distributionExperiment(cNumber * expectedNum, shuffleItr);
-		
-		double[] expected = new double[(int)cNumber];
-		Arrays.fill(expected, expectedNum);
-		if (report) {
-			System.out.println("catalan number: " + cNumber);
-			System.out.println("observed: ");
-			System.out.println(Arrays.toString(observed));
-			System.out.println("expected: ");
-			System.out.println(Arrays.toString(expected));
+	public double[] testUniformDistribution(List<int[][]> dis, boolean report) {
+		double[] res = new double[dis.size()];
+		for (int i = 0; i < dis.size(); i++) {
+			if (report) {
+				if (i == 0) {
+					System.out.println("catalan number: " + catalanNumber());
+				}
+				else {
+					System.out.println("test statistics: " + TestStatistics.values()[i-1].toString());
+				}
+				System.out.println("observed: ");
+				System.out.println(Arrays.toString(dis.get(i)[0]));
+				System.out.println("expected: ");
+				System.out.println(Arrays.toString(dis.get(i)[1]));
+			}
+			long[] observed = new long[dis.get(i)[0].length];
+			double[] expected = new double[dis.get(i)[0].length];
+			for (int j = 0; j < dis.get(i)[0].length; j++) {
+				observed[j] = dis.get(i)[0][j];
+				expected[j] = dis.get(i)[1][j];
+			}
+			res[i] = new ChiSquareTest().chiSquareTest(expected, observed);
 		}
-		return new ChiSquareTest().chiSquareTest(expected, observed);
+		return res;
+	}
+	
+	public double[] testUniformDistribution(int expectedNum, int shuffleItr, boolean report) {
+		List<int[][]> dis = distributionExperiment(expectedNum, shuffleItr);
+		return testUniformDistribution(dis, report);
 	}
 	
 	public String toString() {
 		return Arrays.toString(cur);
 	}
 	
+	public List<Boolean[]> generateAllCatalanStructures() {
+        List<List<List<Boolean>>> dp = new ArrayList<>();
+        List<List<Boolean>> list = new ArrayList<>();
+        list.add(new ArrayList<Boolean>());
+        dp.add(list);
+        for (int i = 1; i <= n; i++) {
+            list = new ArrayList<>();
+            for (int j = 0; j < i; j++) {
+                for (List<Boolean> x : dp.get(j)) {
+                    for (List<Boolean> y : dp.get(i - j - 1)) {
+                    	List<Boolean> g = new ArrayList<>();
+                    	g.add(true);
+                    	g.addAll(x);
+                    	g.add(false);
+                    	g.addAll(y);
+                        list.add(g);
+                    }
+                }
+            }
+            dp.add(list);
+            
+        }
+        List<Boolean[]> res = new ArrayList<>();
+        for (List<Boolean> b : dp.get(n)) {
+        	Boolean[] ba = new Boolean[b.size()];
+        	b.toArray(ba);
+        	res.add(ba);
+        }
+        return res;
+    }
+	
+	private static int testStatisticsValue(TestStatistics ts, Boolean[] input) {
+		switch (ts) {
+			case PEEK: 
+				int res = 0;
+				int temp = 0;
+				for (Boolean b : input) {
+					temp = b ? temp + 1 : temp - 1;
+					if (temp > res) {
+						res = temp;
+					}
+				}
+				return res;
+			case PEEKMINUSAVG: 
+				int peek = 0;
+				int sum = 0;
+				temp = 0;
+				for (Boolean b : input) {
+					temp = b ? temp + 1 : temp - 1;
+					if (temp > peek) {
+						peek = temp;
+					}
+					sum += temp;
+				}
+				return peek - sum / input.length;
+			default: 
+				return 0;
+		}
+	}
+	
 	private void swap(int index1, int index2) {
 		boolean temp = cur[index1];
 		cur[index1] = cur[index2];
 		cur[index2] = temp;
+	}
+	
+	public enum TestStatistics {
+		PEEK, 
+		PEEKMINUSAVG
+	}
+	
+	public enum InitType {
+		TOP, 
+		BUTTOM, 
+		RANDOM
 	}
 }
