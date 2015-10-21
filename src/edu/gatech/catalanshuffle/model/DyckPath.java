@@ -58,7 +58,7 @@ public class DyckPath extends CatalanModel {
 	}
 	
 	public void loadTestStatisticsDist() {
-		List<Boolean[]> all = generateAllCatalanStructures();
+		List<Boolean[]> all = generateAllCatalanStructures(n);
 		dist = new Map[TestStatistics.values().length];
 		for (TestStatistics ts : TestStatistics.values()) {
 			dist[ts.ordinal()] = new HashMap<>();
@@ -199,7 +199,7 @@ public class DyckPath extends CatalanModel {
 		return Arrays.toString(cur);
 	}
 	
-	public List<Boolean[]> generateAllCatalanStructures() {
+	public static List<Boolean[]> generateAllCatalanStructures(int n) {
         List<List<List<Boolean>>> dp = new ArrayList<>();
         List<List<Boolean>> list = new ArrayList<>();
         list.add(new ArrayList<Boolean>());

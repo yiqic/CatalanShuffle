@@ -16,9 +16,35 @@ public class Triangulation extends CatalanModel {
 	private TreeNode root;
 	private TreeNode[] nodeMap;
 	
+	private Map<Integer, Integer>[] dist;
+	
 	public Triangulation(int n) {
 		super(n);
 		reset();
+		loadTestStatisticsDist();
+	}
+	
+	public void loadTestStatisticsDist() {
+		List<TreeNode> all = generateAllCatalanStructures(n);
+		System.out.println(all.size());
+		dist = new Map[TestStatistics.values().length];
+		TestStatistics ts = TestStatistics.LongestEdge;
+		dist[ts.ordinal()] = new HashMap<>();
+		int uniform = (int)catalanNumber() / (n+2);
+		for (int i = 0; i < n+2; i++) {
+			dist[ts.ordinal()].put(i, uniform);
+		}
+		ts = TestStatistics.LongestDiagonal;
+		dist[ts.ordinal()] = new HashMap<>();
+		for (TreeNode b : all) {
+			int value = testStatisticsValue(ts, b, null);
+			if (dist[ts.ordinal()].containsKey(value)) {
+				dist[ts.ordinal()].put(value, dist[ts.ordinal()].get(value)+1);
+			}
+			else {
+				dist[ts.ordinal()].put(value, 1);
+			}
+		}
 	}
 	
 	public void reset() {
@@ -118,7 +144,7 @@ public class Triangulation extends CatalanModel {
 				freq.put(res, 1);
 			}
 			for (TestStatistics ts : TestStatistics.values()) {
-				int value = testStatisticsValue(ts, nodeMap);
+				int value = testStatisticsValue(ts, root, nodeMap);
 				if (tsFreq[ts.ordinal()].containsKey(value)) {
 					tsFreq[ts.ordinal()].put(value, tsFreq[ts.ordinal()].get(value)+1);
 				}
@@ -140,10 +166,12 @@ public class Triangulation extends CatalanModel {
 		dis.add(data);
 		
 		for (TestStatistics ts : TestStatistics.values()) {
-			data = new int[2][n+2];
-			for (int i = 0; i < n+2; i++) {
-				data[0][i] = tsFreq[ts.ordinal()].containsKey(i) ? tsFreq[ts.ordinal()].get(i) : 0;
-				data[1][i] = (int)cNumber / (n+2) * expectedNum;
+			data = new int[2][dist[ts.ordinal()].size()];
+			int i = 0;
+			for (int val : dist[ts.ordinal()].keySet()) {
+				data[0][i] = tsFreq[ts.ordinal()].containsKey(val) ? tsFreq[ts.ordinal()].get(val) : 0;
+				data[1][i] = dist[ts.ordinal()].get(val) * expectedNum;
+				i++;
 			}
 			dis.add(data);
 		}
@@ -171,7 +199,7 @@ public class Triangulation extends CatalanModel {
 				observed[j] = dis.get(i)[0][j];
 				expected[j] = dis.get(i)[1][j];
 			}
-			res[i] = new ChiSquareTest().chiSquareTest(expected, observed);
+			res[i] = expected.length > 1 ? new ChiSquareTest().chiSquareTest(expected, observed) : 1;
 		}
 		return res;
 	}
@@ -207,7 +235,49 @@ public class Triangulation extends CatalanModel {
 		return res; 
 	}
 	
-	private static int testStatisticsValue(TestStatistics ts, TreeNode[] input) {
+	public static List<TreeNode> generateAllCatalanStructures(int n) {
+		List<TreeNode>[] dp = new List[n+1];
+		dp[0] = new ArrayList<>();
+		dp[0].add(null);
+		for (int i = 1; i <= n; i++) {
+			dp[i] = new ArrayList<>();
+			for (int j = 0; j < i; j++) {
+				for (TreeNode l : dp[j]) {
+					for (TreeNode r : dp[i-1-j]) {
+						TreeNode ro = new TreeNode(0, false);
+						ro.left = copyTree(l);
+						ro.right = copyTree(r);
+						if (ro.left != null) {
+							ro.left.parent = ro;
+						}
+						if (ro.right != null) {
+							ro.right.parent = ro;
+						}
+						dp[i].add(ro);
+					}
+				}
+			}
+		}
+		return dp[n];
+	}
+	
+	public static TreeNode copyTree(TreeNode ori) {
+		if (ori == null) {
+			return null;
+		}
+		TreeNode res = new TreeNode(ori.val, ori.leaf);
+		res.left = copyTree(ori.left);
+		res.right = copyTree(ori.right);
+		if (res.left != null) {
+			res.left.parent = res;
+		}
+		if (res.right != null) {
+			res.right.parent = res;
+		}
+		return res;
+	}
+	
+	private static int testStatisticsValue(TestStatistics ts, TreeNode root, TreeNode[] input) {
 		switch (ts) {
 			case LongestEdge: 
 				double minValue = input.length;
@@ -249,20 +319,57 @@ public class Triangulation extends CatalanModel {
 					}
 				}
 				return minIndex >= 0 ? minIndex : rand.nextInt(input.length+2);
+			case LongestDiagonal: 
+				int n = numNodes(root);
+				return calculateDiagonal(root, n, (double)n / 2);
 			default: 
 				return 0;
 		}
+	}
+	
+	private static int calculateDiagonal(TreeNode input, int n, double threshold) {
+		int maxValue = 0;
+		if (input == null) {
+			return 0;
+		}
+		int left = numNodes(input.left);
+		if (maxValue < left && left <= threshold) {
+			maxValue = left;
+		}
+		else if (maxValue < (n-left) && (n-left) <= threshold) {
+			maxValue = n-left;
+		}
+		int right = numNodes(input.right);
+		if (maxValue < right && right <= threshold) {
+			maxValue = right;
+		}
+		else if (maxValue < (n-right) && (n-right) <= threshold) {
+			maxValue = n-right;
+		}
+		int parent = n-1-left-right;
+		if (maxValue < parent && parent <= threshold) {
+			maxValue = parent;
+		}
+		else if (maxValue < (n-parent) && (n-parent) <= threshold) {
+			maxValue = n-parent;
+		}
+		return Math.max(Math.max(maxValue+1, calculateDiagonal(input.left, n, threshold)),calculateDiagonal(input.right, n, threshold));
 	}
 	
 	private static int leafSize(TreeNode input) {
 		return !input.leaf ? leafSize(input.left)+leafSize(input.right) : 1;
 	}
 	
-	public enum TestStatistics {
-		LongestEdge
+	private static int numNodes(TreeNode input) {
+		return input != null && !input.leaf ? numNodes(input.left)+numNodes(input.right)+1 : 0;
 	}
 	
-	private class TreeNode {
+	public enum TestStatistics {
+		LongestEdge, 
+		LongestDiagonal
+	}
+	
+	private static class TreeNode {
 		boolean leaf;
 		int val;
 		TreeNode parent;
