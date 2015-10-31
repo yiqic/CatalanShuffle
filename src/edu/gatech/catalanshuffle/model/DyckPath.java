@@ -14,7 +14,7 @@ public class DyckPath extends CatalanModel {
 	private Map<Integer, Integer>[] dist;
 	
 	public DyckPath(int n) {
-		this(n, InitType.RANDOM);
+		this(n, InitType.TOP);
 	}
 	
 	public DyckPath(int n, InitType initType) {
@@ -72,6 +72,10 @@ public class DyckPath extends CatalanModel {
 				}
 			}
 		}
+	}
+	
+	public Boolean[] getModel() {
+		return cur;
 	}
 	
 	public void shuffleOnce() {
