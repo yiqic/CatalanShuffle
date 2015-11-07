@@ -13,9 +13,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
-import edu.gatech.catalanshuffle.view.CatalanModelCanvas;
-import edu.gatech.catalanshuffle.view.DyckPathCanvas;
+import edu.gatech.catalanshuffle.view.*;
 
 public class Main extends Application {
 	
@@ -31,7 +29,7 @@ public class Main extends Application {
         primaryStage.setTitle("Catalan Structure");
         Group root = new Group();
         BorderPane frame = new BorderPane();
-        CatalanModelCanvas canvas = new DyckPathCanvas(N, 900, 450);
+        CatalanModelCanvas canvas = new DyckPathCollectionCanvas(N, 900, 450, 100);
         
         Timeline timer = new Timeline(new KeyFrame(Duration.millis(TICK_RATE), new TickCanvas(canvas, 1)));
         timer.setCycleCount(Timeline.INDEFINITE);

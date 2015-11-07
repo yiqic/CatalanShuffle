@@ -4,7 +4,7 @@ import javafx.scene.canvas.Canvas;
 
 public abstract class CatalanModelCanvas extends Canvas {
 	
-	public CatalanModelCanvas(double width, double height) {
+	public CatalanModelCanvas(int n, double width, double height) {
 		super(width, height);
 	}
 

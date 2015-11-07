@@ -10,7 +10,7 @@ public class DyckPathCanvas extends CatalanModelCanvas {
 	private DyckPath model;
 	
 	public DyckPathCanvas(int n, double width, double height) {
-		super(width, height);
+		super(n, width, height);
 		this.model = new DyckPath(n);
 		draw();
 	}
