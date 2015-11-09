@@ -20,6 +20,11 @@ public class DyckPathCanvas extends CatalanModelCanvas {
 		draw();
 	}
 	
+	public void reset() {
+		model.reset();
+		draw();
+	}
+	
 	private void draw() {
 		double width = getWidth();
         double height = getHeight();

@@ -13,12 +13,23 @@ public class DyckPath extends CatalanModel {
 	private Boolean[] cur;
 	private Map<Integer, Integer>[] dist;
 	
+	public static final InitType DEFAULT_INIT_TYPE = InitType.TOP;
+	
 	public DyckPath(int n) {
-		this(n, InitType.TOP);
+		this(n, DEFAULT_INIT_TYPE);
 	}
 	
 	public DyckPath(int n, InitType initType) {
 		super(n);
+		reset(initType);
+		loadTestStatisticsDist();
+	}
+	
+	public void reset() {
+		reset(DEFAULT_INIT_TYPE);
+	}
+	
+	public void reset(InitType initType) {
 		this.cur = new Boolean[2 * n];
 		if (initType == InitType.RANDOM) {
 			int posi = 0;
@@ -54,7 +65,6 @@ public class DyckPath extends CatalanModel {
 				cur[2 * i + 1] = false;
 			}
 		}
-		loadTestStatisticsDist();
 	}
 	
 	public void loadTestStatisticsDist() {

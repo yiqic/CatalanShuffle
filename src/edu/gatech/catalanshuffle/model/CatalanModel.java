@@ -28,6 +28,7 @@ public abstract class CatalanModel {
 		}
 	}
 	
+	public abstract void reset();
 	public abstract void shuffleOnce();
 	public abstract boolean checkCatalanProperty();
 	public abstract double[] testUniformDistribution(int expectedNum, int shuffleItr, boolean report);

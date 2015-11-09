@@ -9,5 +9,6 @@ public abstract class CatalanModelCanvas extends Canvas {
 	}
 
 	public abstract void tick();
+	public abstract void reset();
 	
 }

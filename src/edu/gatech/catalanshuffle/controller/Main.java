@@ -69,8 +69,15 @@ public class Main extends Application {
         Button tick5 = new Button("Tick 5 Times");
         tick5.setPrefSize(100, 20);
         tick5.setOnAction(new TickCanvas(canvas, 5));
+        Button reset = new Button("Reset");
+        reset.setPrefSize(100, 20);
+        reset.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+            	canvas.reset();
+            }
+        });
         
-        hbox.getChildren().addAll(pause, play, tick, tick5);
+        hbox.getChildren().addAll(pause, play, tick, tick5, reset);
         return hbox;
     }
     
