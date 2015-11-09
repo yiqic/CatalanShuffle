@@ -37,6 +37,7 @@ public class DyckPathCollectionCanvas extends CatalanModelCanvas {
         double unitWidth = width / length;
         double unitHeight = height / model[0].getN();
         double unitOpacity = 1.0 / model.length;
+        double avgHeight = 0;
         
         Map<List<Double>, Double> viewModel = new HashMap<>();
         for (DyckPath path : model) {
@@ -56,6 +57,7 @@ public class DyckPathCollectionCanvas extends CatalanModelCanvas {
             	}
             	curHeight = nextHeight;
             }
+            avgHeight += path.testStatisticsValue(DyckPath.TestStatistics.PEEK);
         }
 
         GraphicsContext gc = getGraphicsContext2D();
@@ -67,5 +69,9 @@ public class DyckPathCollectionCanvas extends CatalanModelCanvas {
         	gc.strokeLine(coor.get(0), coor.get(1), coor.get(2), coor.get(3));
         }
         
+        avgHeight /= model.length;
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(1);
+        gc.strokeText("Average Height: " + avgHeight, 10, 20);
 	}
 }

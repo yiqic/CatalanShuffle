@@ -234,6 +234,10 @@ public class DyckPath extends CatalanModel {
         return res;
     }
 	
+	public int testStatisticsValue(TestStatistics ts) {
+		return testStatisticsValue(ts, cur);
+	}
+	
 	private static int testStatisticsValue(TestStatistics ts, Boolean[] input) {
 		switch (ts) {
 			case PEEK: 
