@@ -10,7 +10,9 @@ import org.apache.commons.math3.stat.inference.ChiSquareTest;
 
 public class DyckPath extends CatalanModel {
 	
-	private Boolean[] cur;
+	protected Boolean[] cur;
+	private InitType initType;
+	private boolean lazyChain;
 	private Map<Integer, Integer>[] dist;
 	
 	public static final InitType DEFAULT_INIT_TYPE = InitType.TOP;
@@ -20,16 +22,20 @@ public class DyckPath extends CatalanModel {
 	}
 	
 	public DyckPath(int n, InitType initType) {
+		this(n, initType, false, true);
+	}
+	
+	public DyckPath(int n, InitType initType, boolean lazyChain, boolean initDist) {
 		super(n);
-		reset(initType);
-		loadTestStatisticsDist();
+		this.initType = initType;
+		this.lazyChain = lazyChain;
+		reset();
+		if (initDist) {
+			loadTestStatisticsDist();
+		}
 	}
 	
 	public void reset() {
-		reset(DEFAULT_INIT_TYPE);
-	}
-	
-	public void reset(InitType initType) {
 		this.cur = new Boolean[2 * n];
 		if (initType == InitType.RANDOM) {
 			int posi = 0;
@@ -89,19 +95,44 @@ public class DyckPath extends CatalanModel {
 	}
 	
 	public void shuffleOnce() {
-		int index1, index2;
-		boolean satisfy = false;
-		while (!satisfy) {
-			index1 = rand.nextInt(2 * n);
-			index2 = rand.nextInt(2 * n);
-			if (index1 > index2) {
-				int tmp = index1;
-				index1 = index2;
-				index2 = tmp;
-			}
-			swap(index1, index2);
-			if (!(satisfy = (cur[index1] || (!cur[index2]) || checkCatalanProperty()))) {
-				swap(index1, index2);
+		shuffleOnce(rand.nextInt(2 * n), rand.nextInt(2 * n));
+//		int index1, index2;
+//		boolean satisfy = false;
+//		while (!satisfy) {
+//			index1 = rand.nextInt(2 * n);
+//			index2 = rand.nextInt(2 * n);
+//			if (index1 > index2) {
+//				int tmp = index1;
+//				index1 = index2;
+//				index2 = tmp;
+//			}
+//			swap(index1, index2);
+//			if (!(satisfy = (cur[index1] || (!cur[index2]) || checkCatalanProperty()))) {
+//				swap(index1, index2);
+//				System.out.println(satisfy);
+//			}
+//		}
+	}
+	
+	public void shuffleOnce(int index1, int index2) {
+		shuffleOnce(index1, index2, rand.nextBoolean());
+	}
+	
+	public void shuffleOnce(int index1, int index2, boolean firstIndexValue) {
+		if (index1 > index2) {
+			int tmp = index1;
+			index1 = index2;
+			index2 = tmp;
+		}
+		if (!lazyChain) {
+			firstIndexValue = cur[index2];
+		}
+		if (cur[index1] != cur[index2]) {
+			cur[index1] = firstIndexValue;
+			cur[index2] = !firstIndexValue;
+			if (!firstIndexValue && !checkCatalanProperty()) {
+				cur[index1] = !firstIndexValue;
+				cur[index2] = firstIndexValue;
 			}
 		}
 	}

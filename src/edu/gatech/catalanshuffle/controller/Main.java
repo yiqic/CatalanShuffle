@@ -17,8 +17,8 @@ import edu.gatech.catalanshuffle.view.*;
 
 public class Main extends Application {
 	
-	public static final int TICK_RATE = 200;
-	public static final int N = 10;
+	public static final int TICK_RATE = 100;
+	public static final int N = 15;
 	 
     public static void main(String[] args) {
         launch(args);
@@ -29,7 +29,8 @@ public class Main extends Application {
         primaryStage.setTitle("Catalan Structure");
         Group root = new Group();
         BorderPane frame = new BorderPane();
-        CatalanModelCanvas canvas = new DyckPathCollectionCanvas(N, 900, 450, 100);
+//        CatalanModelCanvas canvas = new DyckPathCollectionCanvas(N, 900, 450, 100);
+        CatalanModelCanvas canvas = new DyckPathCouplingCanvas(N, 900, 450, false, true);
         
         Timeline timer = new Timeline(new KeyFrame(Duration.millis(TICK_RATE), new TickCanvas(canvas, 1)));
         timer.setCycleCount(Timeline.INDEFINITE);

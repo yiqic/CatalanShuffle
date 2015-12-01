@@ -9,10 +9,11 @@ import edu.gatech.catalanshuffle.model.DyckPath.InitType;
 public class Main {
 
 	public static void main(String[] args) {
-		Triangulation model = new Triangulation(5);
+		DyckPath model = new DyckPath(8);
 		double[] p = new double[32];
+		double[] p2 = new double[32];
 		int expectedNum = 5;
-		int stepSize = 2;
+		int stepSize = 16;
 		System.out.println(Arrays.toString(model.distributionExperiment(expectedNum, 0).get(2)[1]));
 		for (int i = 0; i < 50; i++) {
 			int itr = 0;
@@ -21,9 +22,11 @@ public class Main {
 //				p[j] += model.testUniformDistribution(5, itr, false)[0];
 				List<int[][]> res = model.distributionExperiment(expectedNum,itr);
 //				System.out.print(itr + "\t" + Arrays.toString(res.get(1)[0]));
-				double pval = model.testUniformDistribution(res, false)[2];
+				double[] pvall = model.testUniformDistribution(res, false);
+//				double pval = model.testUniformDistribution(res, false)[2];
 //				System.out.println("\t" + pval);
-				p[j] += pval;
+				p[j] += pvall[1];
+				p2[j] += pvall[2];
 				itr += stepSize;
 			}
 //			System.out.println("finish itr " + i);
@@ -32,7 +35,7 @@ public class Main {
 		int itr = 0;
 		for (int j = 0; j < p.length; j++) {
 			List<int[][]> res = model.distributionExperiment(expectedNum, itr);
-			System.out.println(itr + "\t" + Arrays.toString(res.get(2)[0]) + "\t" + (p[j]/50));
+			System.out.println(itr + "\t" + Arrays.toString(res.get(2)[0]) + "\t" + (p[j]/50) + "\t" + (p2[j]/50));
 			itr += stepSize;
 		}
 	}
