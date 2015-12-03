@@ -1,5 +1,7 @@
 package edu.gatech.catalanshuffle.view;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -14,7 +16,8 @@ public class DyckPathCouplingCanvas extends CatalanModelCanvas {
 	
 	private int difference;
 	private int tickCounter;
-	private int mergeTime; //number of shuffles it takes for the two Dyck paths to merge. 
+	//number of shuffles it takes for the two Dyck paths to merge. 
+	private List<Integer> mergeTime;
 	
 	private boolean independentShuffling;
 	
@@ -31,7 +34,7 @@ public class DyckPathCouplingCanvas extends CatalanModelCanvas {
 		this.bottom = new DyckPath(n, InitType.BUTTOM, lazyChain, false);
 		this.independentShuffling = independentShuffling;
 		this.difference = n / 2;
-		this.mergeTime = -1;
+		this.mergeTime =  new ArrayList<Integer>();
 		this.tickCounter = 0;
 		draw();
 	}
@@ -96,14 +99,14 @@ public class DyckPathCouplingCanvas extends CatalanModelCanvas {
         	curBottomHeight = nextBottomHeight;
         }
         if (difference != 0 && curDifference == 0) {
-        	mergeTime = tickCounter;
+        	mergeTime.add(tickCounter);
         }
         difference = curDifference;
         
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(1);
-        gc.strokeText("Number of shuffles: " + tickCounter, 10, 20);
-        gc.strokeText("Number of differences: " + difference, 10, 45);
-        gc.strokeText("Number of shuffles to merge: " + mergeTime, 10, 70);
+        gc.strokeText("Time elapsed: " + tickCounter, 10, 20);
+        gc.strokeText("Distance: " + difference, 10, 45);
+        gc.strokeText("Coupling time: " + mergeTime, 10, 70);
 	}
 }
