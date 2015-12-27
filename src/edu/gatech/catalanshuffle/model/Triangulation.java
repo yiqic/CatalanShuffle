@@ -19,9 +19,15 @@ public class Triangulation extends CatalanModel {
 	private Map<Integer, Integer>[] dist;
 	
 	public Triangulation(int n) {
+		this(n, true);
+	}
+	
+	public Triangulation(int n, boolean initDist) {
 		super(n);
 		reset();
-		loadTestStatisticsDist();
+		if (initDist) {
+			loadTestStatisticsDist();
+		}
 	}
 	
 	public void loadTestStatisticsDist() {
@@ -45,6 +51,10 @@ public class Triangulation extends CatalanModel {
 				dist[ts.ordinal()].put(value, 1);
 			}
 		}
+	}
+	
+	public TreeNode getRoot() {
+		return root;
 	}
 	
 	public void reset() {
@@ -94,6 +104,9 @@ public class Triangulation extends CatalanModel {
 				child.right = target;
 				gchild.parent = target;
 			}
+			else {
+				shuffleOnce();
+			}
 		}
 		else {
 			if (!target.right.leaf) {
@@ -115,6 +128,9 @@ public class Triangulation extends CatalanModel {
 				child.parent = parent;
 				child.left = target;
 				gchild.parent = target;
+			}
+			else {
+				shuffleOnce();
 			}
 		}
 	}
@@ -277,7 +293,7 @@ public class Triangulation extends CatalanModel {
 		return res;
 	}
 	
-	private static int testStatisticsValue(TestStatistics ts, TreeNode root, TreeNode[] input) {
+	public static int testStatisticsValue(TestStatistics ts, TreeNode root, TreeNode[] input) {
 		switch (ts) {
 			case LongestEdge: 
 				double minValue = input.length;
@@ -356,7 +372,7 @@ public class Triangulation extends CatalanModel {
 		return Math.max(Math.max(maxValue+1, calculateDiagonal(input.left, n, threshold)),calculateDiagonal(input.right, n, threshold));
 	}
 	
-	private static int leafSize(TreeNode input) {
+	public static int leafSize(TreeNode input) {
 		return !input.leaf ? leafSize(input.left)+leafSize(input.right) : 1;
 	}
 	
@@ -369,7 +385,7 @@ public class Triangulation extends CatalanModel {
 		LongestDiagonal
 	}
 	
-	private static class TreeNode {
+	public static class TreeNode {
 		boolean leaf;
 		int val;
 		TreeNode parent;
@@ -379,6 +395,18 @@ public class Triangulation extends CatalanModel {
 		public TreeNode(int val, boolean leaf) {
 			this.val = val;
 			this.leaf = leaf;
+		}
+		
+		public boolean isLeaf() {
+			return leaf;
+		}
+		
+		public TreeNode getLeft() {
+			return left;
+		}
+		
+		public TreeNode getRight() {
+			return right;
 		}
 	}
 
