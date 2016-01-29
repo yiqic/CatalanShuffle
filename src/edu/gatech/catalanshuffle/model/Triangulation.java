@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
 
+import edu.gatech.catalanshuffle.model.CatalanModel.DistanceMetric;
 import edu.gatech.catalanshuffle.model.DyckPath.TestStatistics;
 
 public class Triangulation extends CatalanModel {
@@ -139,10 +140,10 @@ public class Triangulation extends CatalanModel {
 		return true;
 	}
 	
-	public List<int[][]> distributionExperiment(int expectedNum, int shuffleItr) {
+	public List<double[][]> distributionExperiment(double expectedNum, int shuffleItr) {
 		long cNumber = catalanNumber();
-		long trials = cNumber * expectedNum;
-		List<int[][]> dis = new ArrayList<>();
+		long trials = (long) (cNumber * expectedNum);
+		List<double[][]> dis = new ArrayList<>();
 		
 		reset();
 		Map<List<Integer>, Integer> freq = new HashMap<>();
@@ -171,7 +172,7 @@ public class Triangulation extends CatalanModel {
 			reset();
 		}
 		
-		int[][] data = new int[2][(int)cNumber];
+		double[][] data = new double[2][(int)cNumber];
 		int idx = 0;
 		for (Integer l : freq.values()) {
 			data[0][idx] = l;
@@ -182,7 +183,7 @@ public class Triangulation extends CatalanModel {
 		dis.add(data);
 		
 		for (TestStatistics ts : TestStatistics.values()) {
-			data = new int[2][dist[ts.ordinal()].size()];
+			data = new double[2][dist[ts.ordinal()].size()];
 			int i = 0;
 			for (int val : dist[ts.ordinal()].keySet()) {
 				data[0][i] = tsFreq[ts.ordinal()].containsKey(val) ? tsFreq[ts.ordinal()].get(val) : 0;
@@ -194,7 +195,7 @@ public class Triangulation extends CatalanModel {
 		return dis;
 	}
 	
-	public double[] testUniformDistribution(List<int[][]> dis, boolean report) {
+	public double[] testUniformDistribution(List<double[][]> dis, boolean report, DistanceMetric metric) {
 		double[] res = new double[dis.size()];
 		for (int i = 0; i < dis.size(); i++) {
 			if (report) {
@@ -212,17 +213,19 @@ public class Triangulation extends CatalanModel {
 			long[] observed = new long[dis.get(i)[0].length];
 			double[] expected = new double[dis.get(i)[0].length];
 			for (int j = 0; j < dis.get(i)[0].length; j++) {
-				observed[j] = dis.get(i)[0][j];
+				observed[j] = (long) dis.get(i)[0][j];
 				expected[j] = dis.get(i)[1][j];
 			}
-			res[i] = expected.length > 1 ? new ChiSquareTest().chiSquareTest(expected, observed) : 1;
+			res[i] = expected.length <= 1 ? 1 : 
+				(metric == DistanceMetric.CHISQUARE ? new ChiSquareTest().chiSquareTest(expected, observed) : 
+					averageDistance(expected, observed));
 		}
 		return res;
 	}
 	
-	public double[] testUniformDistribution(int expectedNum, int shuffleItr, boolean report) {
-		List<int[][]> dis = distributionExperiment(expectedNum, shuffleItr);
-		return testUniformDistribution(dis, report);
+	public double[] testUniformDistribution(int expectedNum, int shuffleItr, boolean report, DistanceMetric metric) {
+		List<double[][]> dis = distributionExperiment(expectedNum, shuffleItr);
+		return testUniformDistribution(dis, report, metric);
 	}
 	
 	public List<Integer> serialize() {

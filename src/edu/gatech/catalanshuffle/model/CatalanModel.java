@@ -28,9 +28,22 @@ public abstract class CatalanModel {
 		}
 	}
 	
+	public double averageDistance(double[] expected, long[] observed) {
+		double res = 0;
+		for (int i = 0; i < expected.length; i++) {
+			res += Math.abs(expected[i] - observed[i]);
+		}
+		return res / expected.length;
+	}
+	
 	public abstract void reset();
 	public abstract void shuffleOnce();
 	public abstract boolean checkCatalanProperty();
-	public abstract double[] testUniformDistribution(int expectedNum, int shuffleItr, boolean report);
+	public abstract double[] testUniformDistribution(int expectedNum, int shuffleItr, boolean report, DistanceMetric metric);
+	
+	public enum DistanceMetric {
+		CHISQUARE, 
+		AVERAGEDISTANCE
+	}
 
 }

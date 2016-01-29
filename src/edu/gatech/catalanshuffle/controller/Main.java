@@ -17,8 +17,8 @@ import edu.gatech.catalanshuffle.view.*;
 
 public class Main extends Application {
 	
-	public static final int TICK_RATE = 200;
-	public static final int N = 8;
+	public static final int TICK_RATE = 400;
+	public static final int N = 20;
 	 
     public static void main(String[] args) {
         launch(args);

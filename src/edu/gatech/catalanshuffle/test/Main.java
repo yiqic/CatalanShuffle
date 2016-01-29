@@ -4,59 +4,65 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.gatech.catalanshuffle.model.*;
-import edu.gatech.catalanshuffle.model.DyckPath.InitType;
+import edu.gatech.catalanshuffle.model.CatalanModel.DistanceMetric;
 
 public class Main {
 
 	public static void main(String[] args) {
-		Triangulation model = new Triangulation(8);
-		double[] p = new double[32];
-		double[] p2 = new double[32];
-		int expectedNum = 5;
+		DyckPath model = new DyckPath(20);
+		double[][] p = new double[15][32];
+//		double[] p2 = new double[32];
+//		double expectedNum = 5;
+		long trials = 1000;
 		int stepSize = 8;
-		System.out.println(Arrays.toString(model.distributionExperiment(expectedNum, 0).get(2)[1]));
-		for (int i = 0; i < 50; i++) {
-			int itr = 0;
-//			System.out.println();
-			for (int j = 0; j < p.length; j++) {
-//				p[j] += model.testUniformDistribution(5, itr, false)[0];
-				List<int[][]> res = model.distributionExperiment(expectedNum,itr);
-//				System.out.print(itr + "\t" + Arrays.toString(res.get(1)[0]));
-				double[] pvall = model.testUniformDistribution(res, false);
-//				double pval = model.testUniformDistribution(res, false)[2];
-//				System.out.println("\t" + pval);
-				p[j] += pvall[2];
-//				p2[j] += pvall[0];
-				itr += stepSize;
+		int n = 5;
+		for (int k = 0; k < p.length; k++) {
+			model = new DyckPath(n);
+			System.out.print(n);
+			for (int i = 0; i < 50; i++) {
+				int itr = 0;
+				for (int j = 0; j < p[0].length; j++) {
+					List<double[][]> res = model.distributionExperiment(trials, itr);
+					double[] pvall = model.testUniformDistribution(res, false, DistanceMetric.AVERAGEDISTANCE);
+					p[k][j] += pvall[2];
+					itr += stepSize;
+				}
 			}
-//			System.out.println("finish itr " + i);
-//			System.out.println(Arrays.toString(p));
+			for (int j = 0; j < p[0].length; j++) {
+				System.out.print("\t" + (p[k][j]/50));
+			}
+			System.out.println();
+			n += 2;
 		}
 
-		model = new Triangulation(10);
-		for (int i = 0; i < 50; i++) {
-			int itr = 0;
-//			System.out.println();
-			for (int j = 0; j < p.length; j++) {
-//				p[j] += model.testUniformDistribution(5, itr, false)[0];
-				List<int[][]> res = model.distributionExperiment(expectedNum,itr);
-//				System.out.print(itr + "\t" + Arrays.toString(res.get(1)[0]));
-				double[] pvall = model.testUniformDistribution(res, false);
-//				double pval = model.testUniformDistribution(res, false)[2];
-//				System.out.println("\t" + pval);
-				p2[j] += pvall[2];
-//				p2[j] += pvall[0];
-				itr += stepSize;
-			}
-//			System.out.println("finish itr " + i);
-//			System.out.println(Arrays.toString(p));
-		}
+//		model = new DyckPath(14);
+//		for (int i = 0; i < 50; i++) {
+//			int itr = 0;
+////			System.out.println();
+//			for (int j = 0; j < p.length; j++) {
+////				p[j] += model.testUniformDistribution(5, itr, false)[0];
+//				List<double[][]> res = model.distributionExperiment(trials, itr);
+////				System.out.print(itr + "\t" + Arrays.toString(res.get(1)[0]));
+//				double[] pvall = model.testUniformDistribution(res, false, DistanceMetric.AVERAGEDISTANCE);
+////				double pval = model.testUniformDistribution(res, false)[2];
+////				System.out.println("\t" + pval);
+//				p2[j] += pvall[3];
+////				p2[j] += pvall[0];
+//				itr += stepSize;
+//			}
+////			System.out.println("finish itr " + i);
+////			System.out.println(Arrays.toString(p));
+//		}
 
 		int itr = 0;
-		for (int j = 0; j < p.length; j++) {
-			List<int[][]> res = model.distributionExperiment(expectedNum, itr);
-			System.out.println(itr + "\t" + Arrays.toString(res.get(2)[0]) + "\t" + (p[j]/50) + "\t" + (p2[j]/50));
+		for (int j = 0; j < p[0].length; j++) {
+			System.out.print(itr);
+			for (int i = 0; i < p.length; i++) {
+//				List<int[][]> res = model.distributionExperiment(expectedNum, itr);
+				System.out.print("\t" + (p[i][j]/50));
+			}
 			itr += stepSize;
+			System.out.println();
 		}
 	}
 

@@ -13,7 +13,7 @@ public class DyckPath extends CatalanModel {
 	protected Boolean[] cur;
 	private InitType initType;
 	private boolean lazyChain;
-	private Map<Integer, Integer>[] dist;
+	private Map<Integer, Long>[] dist;
 	
 	public static final InitType DEFAULT_INIT_TYPE = InitType.TOP;
 	
@@ -73,22 +73,31 @@ public class DyckPath extends CatalanModel {
 		}
 	}
 	
+//	public void loadTestStatisticsDist() {
+//		List<Boolean[]> all = generateAllCatalanStructures(n);
+//		dist = new Map[TestStatistics.values().length];
+//		for (TestStatistics ts : TestStatistics.values()) {
+//			dist[ts.ordinal()] = new HashMap<>();
+//			for (Boolean[] b : all) {
+//				int value = testStatisticsValue(ts, b);
+//				if (dist[ts.ordinal()].containsKey(value)) {
+//					dist[ts.ordinal()].put(value, dist[ts.ordinal()].get(value)+1);
+//				}
+//				else {
+//					dist[ts.ordinal()].put(value, 1);
+//				}
+//			}
+//		}
+//	}
+	
 	public void loadTestStatisticsDist() {
-		List<Boolean[]> all = generateAllCatalanStructures(n);
 		dist = new Map[TestStatistics.values().length];
 		for (TestStatistics ts : TestStatistics.values()) {
 			dist[ts.ordinal()] = new HashMap<>();
-			for (Boolean[] b : all) {
-				int value = testStatisticsValue(ts, b);
-				if (dist[ts.ordinal()].containsKey(value)) {
-					dist[ts.ordinal()].put(value, dist[ts.ordinal()].get(value)+1);
-				}
-				else {
-					dist[ts.ordinal()].put(value, 1);
-				}
-			}
 		}
-	}
+//		generateAllCatalanStructures(n, dist);
+		generateHalfCatalanStructures(n, dist);
+	}	
 	
 	public Boolean[] getModel() {
 		return cur;
@@ -154,10 +163,14 @@ public class DyckPath extends CatalanModel {
 		return true;
 	}
 	
-	public List<int[][]> distributionExperiment(int expectedNum, int shuffleItr) {
+	public List<double[][]> distributionExperiment(long trials, int shuffleItr) {
+		return distributionExperiment(((double)trials) / catalanNumber(), shuffleItr);
+	}
+	
+	public List<double[][]> distributionExperiment(double expectedNum, int shuffleItr) {
 		long cNumber = catalanNumber();
-		long trials = cNumber * expectedNum;
-		List<int[][]> dis = new ArrayList<>();
+		long trials = (long) (cNumber * expectedNum);
+		List<double[][]> dis = new ArrayList<>();
 		
 		Boolean[] start = cur.clone();
 		Map<List<Boolean>, Integer> freq = new HashMap<>();
@@ -186,18 +199,18 @@ public class DyckPath extends CatalanModel {
 			cur = start.clone();
 		}
 		
-		int[][] data = new int[2][(int)cNumber];
-		int idx = 0;
-		for (Integer l : freq.values()) {
-			data[0][idx] = l;
-			idx++;
-		}
-		
-		Arrays.fill(data[1], expectedNum);
-		dis.add(data);
+//		double[][] data = new double[2][(int)cNumber];
+//		int idx = 0;
+//		for (Integer l : freq.values()) {
+//			data[0][idx] = l;
+//			idx++;
+//		}
+//		
+//		Arrays.fill(data[1], expectedNum);
+//		dis.add(data);
 		
 		for (TestStatistics ts : TestStatistics.values()) {
-			data = new int[2][dist[ts.ordinal()].size()];
+			double[][] data = new double[2][dist[ts.ordinal()].size()];
 			int i = 0;
 			for (int val : dist[ts.ordinal()].keySet()) {
 				data[0][i] = tsFreq[ts.ordinal()].containsKey(val) ? tsFreq[ts.ordinal()].get(val) : 0;
@@ -209,7 +222,7 @@ public class DyckPath extends CatalanModel {
 		return dis;
 	}
 	
-	public double[] testUniformDistribution(List<int[][]> dis, boolean report) {
+	public double[] testUniformDistribution(List<double[][]> dis, boolean report, DistanceMetric metric) {
 		double[] res = new double[dis.size()];
 		for (int i = 0; i < dis.size(); i++) {
 			if (report) {
@@ -227,17 +240,18 @@ public class DyckPath extends CatalanModel {
 			long[] observed = new long[dis.get(i)[0].length];
 			double[] expected = new double[dis.get(i)[0].length];
 			for (int j = 0; j < dis.get(i)[0].length; j++) {
-				observed[j] = dis.get(i)[0][j];
+				observed[j] = (long) dis.get(i)[0][j];
 				expected[j] = dis.get(i)[1][j];
 			}
-			res[i] = new ChiSquareTest().chiSquareTest(expected, observed);
+			res[i] = metric == DistanceMetric.CHISQUARE ? new ChiSquareTest().chiSquareTest(expected, observed) : 
+				averageDistance(expected, observed);
 		}
 		return res;
 	}
-	
-	public double[] testUniformDistribution(int expectedNum, int shuffleItr, boolean report) {
-		List<int[][]> dis = distributionExperiment(expectedNum, shuffleItr);
-		return testUniformDistribution(dis, report);
+
+	public double[] testUniformDistribution(int expectedNum, int shuffleItr, boolean report, DistanceMetric metric) {
+		List<double[][]> dis = distributionExperiment((double)expectedNum, shuffleItr);
+		return testUniformDistribution(dis, report, metric);
 	}
 	
 	public String toString() {
@@ -275,6 +289,80 @@ public class DyckPath extends CatalanModel {
         return res;
     }
 	
+	public static void generateHalfCatalanStructures(int n, Map<Integer, Long>[] dist) {
+		generateHalfCatalanStructures(n, dist, new ArrayList<>(), 0, 0);
+		for (int key : dist[2].keySet()) {
+			dist[2].put(key, dist[2].get(key) * dist[2].get(key));
+		}
+	}
+	
+	public static void generateHalfCatalanStructures(int n, Map<Integer, Long>[] dist, List<Boolean> cur, int numTrue, int height) {
+		if (cur.size() == n) {
+			int value = height;
+			if (dist[2].containsKey(value)) {
+				dist[2].put(value, dist[2].get(value)+1);
+			}
+			else {
+				dist[2].put(value, (long) 1);
+			}
+		}
+		else {
+			cur.add(true);
+			numTrue++;
+			height++;
+			generateHalfCatalanStructures(n, dist, cur, numTrue, height);
+			cur.remove(cur.size() - 1);
+			numTrue--;
+			height--;
+			if (height > 0) {
+				cur.add(false);
+				height--;
+				generateHalfCatalanStructures(n, dist, cur, numTrue, height);
+				cur.remove(cur.size() - 1);
+				height++;
+			}
+		}
+	}
+	
+	
+	public static void generateAllCatalanStructures(int n, Map<Integer, Long>[] dist) {
+		generateAllCatalanStructures(n, dist, new ArrayList<>(), 0, 0);
+	}
+	
+	public static void generateAllCatalanStructures(int n, Map<Integer, Long>[] dist, List<Boolean> cur, int numTrue, int height) {
+		if (cur.size() == n * 2) {
+			Boolean[] res = new Boolean[n * 2];
+			cur.toArray(res);
+			for (TestStatistics ts : TestStatistics.values()) {
+				int value = testStatisticsValue(ts, res);
+				if (dist[ts.ordinal()].containsKey(value)) {
+					dist[ts.ordinal()].put(value, dist[ts.ordinal()].get(value)+1);
+				}
+				else {
+					dist[ts.ordinal()].put(value, (long) 1);
+				}
+			}
+		}
+		else {
+			if (numTrue < n) {
+				cur.add(true);
+				numTrue++;
+				height++;
+				generateAllCatalanStructures(n, dist, cur, numTrue, height);
+				cur.remove(cur.size() - 1);
+				numTrue--;
+				height--;
+			}
+			if (height > 0) {
+				cur.add(false);
+				height--;
+				generateAllCatalanStructures(n, dist, cur, numTrue, height);
+				cur.remove(cur.size() - 1);
+				height++;
+			}
+		}
+	}
+	
 	public int testStatisticsValue(TestStatistics ts) {
 		return testStatisticsValue(ts, cur);
 	}
@@ -303,6 +391,12 @@ public class DyckPath extends CatalanModel {
 					sum += temp;
 				}
 				return peek - sum / input.length;
+			case MIDDLEHEIGHT: 
+				int height = 0;
+				for (int i = 0; i < input.length / 2; i++) {
+					height += input[i] ? 1 : -1;
+				}
+				return height;
 			default: 
 				return 0;
 		}
@@ -316,7 +410,8 @@ public class DyckPath extends CatalanModel {
 	
 	public enum TestStatistics {
 		PEEK, 
-		PEEKMINUSAVG
+		PEEKMINUSAVG, 
+		MIDDLEHEIGHT
 	}
 	
 	public enum InitType {
