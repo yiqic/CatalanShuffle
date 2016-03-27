@@ -12,6 +12,7 @@ public class DyckPath extends CatalanModel {
 	
 	protected Boolean[] cur;
 	private InitType initType;
+	// if chain is lazy, 50% of the time chain does not move (used for coupling)
 	private boolean lazyChain;
 	private Map<Integer, Long>[] dist;
 	
@@ -105,28 +106,19 @@ public class DyckPath extends CatalanModel {
 	
 	public void shuffleOnce() {
 		shuffleOnce(rand.nextInt(2 * n), rand.nextInt(2 * n));
-//		int index1, index2;
-//		boolean satisfy = false;
-//		while (!satisfy) {
-//			index1 = rand.nextInt(2 * n);
-//			index2 = rand.nextInt(2 * n);
-//			if (index1 > index2) {
-//				int tmp = index1;
-//				index1 = index2;
-//				index2 = tmp;
-//			}
-//			swap(index1, index2);
-//			if (!(satisfy = (cur[index1] || (!cur[index2]) || checkCatalanProperty()))) {
-//				swap(index1, index2);
-//				System.out.println(satisfy);
-//			}
-//		}
 	}
 	
 	public void shuffleOnce(int index1, int index2) {
 		shuffleOnce(index1, index2, rand.nextBoolean());
 	}
 	
+	/**
+	 * 
+	 * @param index1
+	 * @param index2
+	 * @param firstIndexValue In coupling, chain is lazy, and we manually set whether the first
+	 * index should go up or down in both chains, in order to make the two chains closer
+	 */
 	public void shuffleOnce(int index1, int index2, boolean firstIndexValue) {
 		if (index1 > index2) {
 			int tmp = index1;
@@ -141,7 +133,7 @@ public class DyckPath extends CatalanModel {
 			cur[index1] = firstIndexValue;
 			cur[index2] = !firstIndexValue;
 			double a2 = testStatisticsValue(TestStatistics.AREA, cur);
-			// Metropolis–Hastings algorithm in order to make stationary distribution weighted by area
+			// Metropolis–Hastings algorithm in order to make stationary distribution weighted by area underneath
 			double acceptProb = Math.min(1, a2/a1);
 			if (a2 < 0 || (weighted && rand.nextDouble() > acceptProb)) {
 				cur[index1] = !firstIndexValue;
@@ -422,11 +414,11 @@ public class DyckPath extends CatalanModel {
 		}
 	}
 	
-	private void swap(int index1, int index2) {
-		boolean temp = cur[index1];
-		cur[index1] = cur[index2];
-		cur[index2] = temp;
-	}
+//	private void swap(int index1, int index2) {
+//		boolean temp = cur[index1];
+//		cur[index1] = cur[index2];
+//		cur[index2] = temp;
+//	}
 	
 	public enum TestStatistics {
 		PEEK, 

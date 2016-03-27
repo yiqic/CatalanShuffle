@@ -7,6 +7,7 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 public abstract class CatalanModel {
 	
 	protected final int n;
+	// whether the stationary distribution should be weighted by some factor or uniform
 	protected boolean weighted;
 	
 	public static final Random rand = new Random();
@@ -37,19 +38,30 @@ public abstract class CatalanModel {
 			shuffleOnce();
 		}
 	}
+
+	public abstract void reset();
+	public abstract void shuffleOnce();
+	public abstract boolean checkCatalanProperty();
+	/**
+	 * Using statistical test, calculate the distance between sample distribution and uniform distribution
+	 * after some iterations of shuffles. 
+	 * 
+	 * @param expectedNum number of samples to use in the statistical test should be catalanNumber(n) * expectedNum
+	 * @param shuffleItr results are recorded after shuffleItr steps of random walk
+	 * @param report whether to print result to console
+	 * @param metric which metric to use in calculating the distance (l1 distance or chi square)
+	 * @return length should be len(TestStatistics)+1, the first index records distance between sample distribution 
+	 * and uniform distribution, and the other indices records distances for all test statistics. 
+	 */
+	public abstract double[] testUniformDistribution(int expectedNum, int shuffleItr, boolean report, DistanceMetric metric);
 	
-	public double averageDistance(double[] expected, long[] observed) {
+	public static double averageDistance(double[] expected, long[] observed) {
 		double res = 0;
 		for (int i = 0; i < expected.length; i++) {
 			res += Math.abs(expected[i] - observed[i]);
 		}
 		return res / expected.length;
 	}
-	
-	public abstract void reset();
-	public abstract void shuffleOnce();
-	public abstract boolean checkCatalanProperty();
-	public abstract double[] testUniformDistribution(int expectedNum, int shuffleItr, boolean report, DistanceMetric metric);
 	
 	public enum DistanceMetric {
 		CHISQUARE, 

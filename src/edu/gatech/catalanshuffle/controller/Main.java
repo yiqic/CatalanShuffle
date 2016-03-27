@@ -1,6 +1,5 @@
 package edu.gatech.catalanshuffle.controller;
 
-import javafx.animation.Animation.Status;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -118,6 +117,7 @@ public class Main extends Application {
     	tickSlider.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov,
                 Number old_val, Number new_val) {
+            	// reset timer when rate changes
             	int rate = (int)tickSlider.getValue();
             	timer.stop();
             	timer.getKeyFrames().clear();
@@ -140,6 +140,7 @@ public class Main extends Application {
         vbox.setSpacing(10);
         vbox.setStyle("-fx-background-color: #336699;");
 
+        // pause automatic ticking
         Button pause = new Button("Pause");
         pause.setPrefSize(100, 20);
         pause.setOnAction(new EventHandler<ActionEvent>() {
@@ -148,6 +149,7 @@ public class Main extends Application {
             	timer.pause();
             }
         });
+        // resume automatic ticking
         Button play = new Button("Play");
         play.setPrefSize(100, 20);
         play.setOnAction(new EventHandler<ActionEvent>() {
@@ -156,12 +158,15 @@ public class Main extends Application {
             	timer.play();
             }
         });
+        // manually do one step random walk
         Button tick = new Button("Tick");
         tick.setPrefSize(100, 20);
         tick.setOnAction(new TickCanvas(canvas, 1));
+        // manually do five steps random walk
         Button tick5 = new Button("Tick 5 Times");
         tick5.setPrefSize(100, 20);
         tick5.setOnAction(new TickCanvas(canvas, 5));
+        // reset the structure to be in its original state
         Button reset = new Button("Reset");
         reset.setPrefSize(100, 20);
         reset.setOnAction(new EventHandler<ActionEvent>() {
