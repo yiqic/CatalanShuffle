@@ -34,6 +34,7 @@ public class Main extends Application {
 	BorderPane frame;
 	CatalanModelCanvas canvas;
 	Timeline timer;
+	boolean timerTicking = true;
 	 
     public static void main(String[] args) {
         launch(args);
@@ -64,7 +65,9 @@ public class Main extends Application {
         frame.setCenter(canvas);
         frame.setRight(getControlPanel());
         
-        timer.play();
+        if (timerTicking) {
+        	timer.play();
+        }
     }
     
     public HBox getVariablePanel() {
@@ -115,14 +118,13 @@ public class Main extends Application {
     	tickSlider.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov,
                 Number old_val, Number new_val) {
-            	boolean inAnimation = timer.getStatus() == Status.RUNNING;
             	int rate = (int)tickSlider.getValue();
             	timer.stop();
             	timer.getKeyFrames().clear();
             	timer.getKeyFrames().add(new KeyFrame(Duration.millis(rate), new TickCanvas(canvas, 1)));
             	timer.setCycleCount(Timeline.INDEFINITE);
             	tickValue.setText(String.format("%03d", rate));
-            	if (inAnimation) {
+            	if (timerTicking) {
             		timer.play();
             	}
             }
@@ -142,6 +144,7 @@ public class Main extends Application {
         pause.setPrefSize(100, 20);
         pause.setOnAction(new EventHandler<ActionEvent>() {
             @Override public void handle(ActionEvent e) {
+            	timerTicking = false;
             	timer.pause();
             }
         });
@@ -149,6 +152,7 @@ public class Main extends Application {
         play.setPrefSize(100, 20);
         play.setOnAction(new EventHandler<ActionEvent>() {
             @Override public void handle(ActionEvent e) {
+            	timerTicking = true;
             	timer.play();
             }
         });
