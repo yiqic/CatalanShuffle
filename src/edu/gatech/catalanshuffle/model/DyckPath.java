@@ -22,11 +22,11 @@ public class DyckPath extends CatalanModel {
 	}
 	
 	public DyckPath(int n, InitType initType) {
-		this(n, initType, false, true);
+		this(n, initType, false, true, false);
 	}
 	
-	public DyckPath(int n, InitType initType, boolean lazyChain, boolean initDist) {
-		super(n);
+	public DyckPath(int n, InitType initType, boolean lazyChain, boolean initDist, boolean weighted) {
+		super(n, weighted);
 		this.initType = initType;
 		this.lazyChain = lazyChain;
 		reset();
@@ -137,9 +137,13 @@ public class DyckPath extends CatalanModel {
 			firstIndexValue = cur[index2];
 		}
 		if (cur[index1] != cur[index2]) {
+			double a1 = testStatisticsValue(TestStatistics.AREA, cur);
 			cur[index1] = firstIndexValue;
 			cur[index2] = !firstIndexValue;
-			if (!firstIndexValue && !checkCatalanProperty()) {
+			double a2 = testStatisticsValue(TestStatistics.AREA, cur);
+			// Metropolis–Hastings algorithm in order to make stationary distribution weighted by area
+			double acceptProb = Math.min(1, a2/a1);
+			if (a2 < 0 || (weighted && rand.nextDouble() > acceptProb)) {
 				cur[index1] = !firstIndexValue;
 				cur[index2] = firstIndexValue;
 			}
@@ -368,6 +372,7 @@ public class DyckPath extends CatalanModel {
 	}
 	
 	private static int testStatisticsValue(TestStatistics ts, Boolean[] input) {
+		int height = 0;
 		switch (ts) {
 			case PEEK: 
 				int res = 0;
@@ -392,11 +397,26 @@ public class DyckPath extends CatalanModel {
 				}
 				return peek - sum / input.length;
 			case MIDDLEHEIGHT: 
-				int height = 0;
 				for (int i = 0; i < input.length / 2; i++) {
 					height += input[i] ? 1 : -1;
 				}
 				return height;
+			case AREA: 
+				int area = input.length / 2;
+				for (Boolean b : input) {
+					if (height < 0) {
+						return -1;
+					}
+					if (b) {
+						area += height;
+						height++;
+					}
+					else {
+						height--;
+						area += height;
+					}
+				}
+				return area;
 			default: 
 				return 0;
 		}
@@ -411,7 +431,8 @@ public class DyckPath extends CatalanModel {
 	public enum TestStatistics {
 		PEEK, 
 		PEEKMINUSAVG, 
-		MIDDLEHEIGHT
+		MIDDLEHEIGHT,
+		AREA
 	}
 	
 	public enum InitType {

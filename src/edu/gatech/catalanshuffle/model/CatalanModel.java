@@ -7,11 +7,17 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 public abstract class CatalanModel {
 	
 	protected final int n;
+	protected boolean weighted;
 	
 	public static final Random rand = new Random();
 	
 	public CatalanModel(int n) {
+		this(n, false);
+	}
+	
+	public CatalanModel(int n, boolean weighted) {
 		this.n = n;
+		this.weighted = weighted;
 	}
 	
 	public int getN() {
@@ -20,6 +26,10 @@ public abstract class CatalanModel {
 	
 	public long catalanNumber() {
 		return CombinatoricsUtils.binomialCoefficient(2 * n, n - 1) / n;
+	}
+	
+	public void setWeighted(boolean weighted) {
+		this.weighted = weighted;
 	}
 	
 	public void shuffle(int itr) {

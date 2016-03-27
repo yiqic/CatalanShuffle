@@ -30,6 +30,12 @@ public class DyckPathCollectionCanvas extends CatalanModelCanvas {
 		draw();
 	}
 	
+	public void setWeighted(boolean weighted) {
+		for (DyckPath m : model) {
+			m.setWeighted(weighted);
+		}
+	}
+	
 	public void reset() {
 		for (DyckPath p : model) {
 			p.reset();

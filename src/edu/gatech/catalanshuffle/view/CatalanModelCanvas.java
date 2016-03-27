@@ -7,6 +7,8 @@ public abstract class CatalanModelCanvas extends Canvas {
 	public CatalanModelCanvas(int n, double width, double height) {
 		super(width, height);
 	}
+	
+	public void setWeighted(boolean weighted) {}
 
 	public abstract void tick();
 	public abstract void reset();

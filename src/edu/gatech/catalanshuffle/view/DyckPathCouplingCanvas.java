@@ -30,8 +30,8 @@ public class DyckPathCouplingCanvas extends CatalanModelCanvas {
 	public DyckPathCouplingCanvas(int n, double width, double height, 
 			boolean independentShuffling, boolean lazyChain) {
 		super(n, width, height);
-		this.top = new DyckPath(n, InitType.TOP, lazyChain, false);
-		this.bottom = new DyckPath(n, InitType.BUTTOM, lazyChain, false);
+		this.top = new DyckPath(n, InitType.TOP, lazyChain, false, false);
+		this.bottom = new DyckPath(n, InitType.BUTTOM, lazyChain, false, false);
 		this.independentShuffling = independentShuffling;
 		this.difference = n / 2;
 		this.mergeTime =  new ArrayList<Integer>();
@@ -55,6 +55,11 @@ public class DyckPathCouplingCanvas extends CatalanModelCanvas {
 		
 		tickCounter++;
 		draw();
+	}
+	
+	public void setWeighted(boolean weighted) {
+		top.setWeighted(weighted);
+		bottom.setWeighted(weighted);
 	}
 	
 	public void reset() {

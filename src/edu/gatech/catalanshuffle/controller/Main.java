@@ -12,6 +12,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -44,23 +45,11 @@ public class Main extends Application {
         Group root = new Group();
         frame = new BorderPane();
         setupCanvas(INITIAL_N, INITIAL_CANVAS);
-//        CatalanModelCanvas canvas = new DyckPathCanvas(N, 750, 450);
-//        CatalanModelCanvas canvas = new DyckPathCollectionCanvas(N, 750, 450, 100);
-//        CatalanModelCanvas canvas = new DyckPathCouplingCanvas(N, 750, 450, false, true);
-//        canvas = new PolygonTriangulationCanvas(INITIAL_N, 750, 450);
-//        
-//        timer = new Timeline(new KeyFrame(Duration.millis(TICK_RATE), new TickCanvas(canvas, 1)));
-//        timer.setCycleCount(Timeline.INDEFINITE);
-//        
-//        frame.setCenter(canvas);
-//        frame.setRight(getControlPanel(canvas));
-//        frame.setBottom(getVariablePanel(canvas));
         root.getChildren().add(frame);
         primaryStage.setScene(new Scene(root));
         frame.setBottom(getVariablePanel());
         
         primaryStage.show();
-//        timer.play();
     }
     
     public void setupCanvas(int n, String type) {
@@ -177,7 +166,16 @@ public class Main extends Application {
             }
         });
         
-        vbox.getChildren().addAll(pause, play, tick, tick5, reset);
+        CheckBox weighted = new CheckBox("weighted");
+        weighted.setTextFill(Color.WHITE);
+        weighted.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            public void changed(ObservableValue<? extends Boolean> ov,
+                Boolean old_val, Boolean new_val) {
+                   canvas.setWeighted(new_val);
+            }
+        });
+        
+        vbox.getChildren().addAll(pause, play, tick, tick5, reset, weighted);
         return vbox;
     }
     
