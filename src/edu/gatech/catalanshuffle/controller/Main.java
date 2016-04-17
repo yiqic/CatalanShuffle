@@ -1,5 +1,7 @@
 package edu.gatech.catalanshuffle.controller;
 
+import org.apache.commons.lang3.math.NumberUtils;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -15,6 +17,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -34,6 +37,7 @@ public class Main extends Application {
 	CatalanModelCanvas canvas;
 	Timeline timer;
 	boolean timerTicking = true;
+	double lambda = 1;
 	 
     public static void main(String[] args) {
         launch(args);
@@ -175,16 +179,40 @@ public class Main extends Application {
             }
         });
         
-        CheckBox weighted = new CheckBox("weighted");
-        weighted.setTextFill(Color.WHITE);
-        weighted.selectedProperty().addListener(new ChangeListener<Boolean>() {
-            public void changed(ObservableValue<? extends Boolean> ov,
-                Boolean old_val, Boolean new_val) {
-                   canvas.setWeighted(new_val);
+//        Label lambdaLabel = new Label("Lambda: ");
+        TextField lambdaInput = new TextField();
+        lambdaInput.setPrefSize(100, 20);
+        lambdaInput.setPromptText("Lambda");
+        if (lambda != 1) {
+        	lambdaInput.setText(Double.toString(lambda));
+        }
+        Button applyLambda = new Button("Apply");
+        applyLambda.setPrefSize(100, 20);
+        applyLambda.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+            	String lambdaValue = lambdaInput.getText();
+            	if (lambdaValue.length() == 0) {
+            		lambda = 1;
+            	}
+            	else if (NumberUtils.isNumber(lambdaValue) && NumberUtils.toDouble(lambdaValue) > 0) {
+            		lambda = NumberUtils.toDouble(lambdaValue);
+            	}
+            	else {
+            		lambdaInput.setText(Double.toString(lambda));
+            	}
+            	canvas.setWeightedLambda(lambda);
             }
         });
+//        CheckBox weighted = new CheckBox("weighted");
+//        weighted.setTextFill(Color.WHITE);
+//        weighted.selectedProperty().addListener(new ChangeListener<Boolean>() {
+//            public void changed(ObservableValue<? extends Boolean> ov,
+//                Boolean old_val, Boolean new_val) {
+//                   canvas.setWeighted(new_val);
+//            }
+//        });
         
-        vbox.getChildren().addAll(pause, play, tick, tick5, reset, weighted);
+        vbox.getChildren().addAll(pause, play, tick, tick5, reset, lambdaInput, applyLambda);
         return vbox;
     }
     
@@ -193,13 +221,13 @@ public class Main extends Application {
     	int height = 450;
     	switch(type) {
     	case "Polygon Triangulation": 
-    		return new PolygonTriangulationCanvas(n, width, height);
+    		return new PolygonTriangulationCanvas(n, width, height, lambda);
     	case "Single Dyck Path": 
-    		return new DyckPathCanvas(n, width, height);
+    		return new DyckPathCanvas(n, width, height, lambda);
     	case "100 Dyck Paths": 
-    		return new DyckPathCollectionCanvas(n, width, height, 100);
+    		return new DyckPathCollectionCanvas(n, width, height, lambda, 100);
     	case "Dyck Path Coupling": 
-    		return new DyckPathCouplingCanvas(n, width, height, false, true);
+    		return new DyckPathCouplingCanvas(n, width, height, lambda, false, true);
     	default: 
     		return null;
     	}

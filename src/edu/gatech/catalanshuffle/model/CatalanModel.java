@@ -8,17 +8,17 @@ public abstract class CatalanModel {
 	
 	protected final int n;
 	// whether the stationary distribution should be weighted by some factor or uniform
-	protected boolean weighted;
+	protected double weightedLambda;
 	
 	public static final Random rand = new Random();
 	
 	public CatalanModel(int n) {
-		this(n, false);
+		this(n, 1);
 	}
 	
-	public CatalanModel(int n, boolean weighted) {
+	public CatalanModel(int n, double weightedLambda) {
 		this.n = n;
-		this.weighted = weighted;
+		this.weightedLambda = weightedLambda;
 	}
 	
 	public int getN() {
@@ -29,8 +29,8 @@ public abstract class CatalanModel {
 		return CombinatoricsUtils.binomialCoefficient(2 * n, n - 1) / n;
 	}
 	
-	public void setWeighted(boolean weighted) {
-		this.weighted = weighted;
+	public void setWeightedLambda(double weightedLambda) {
+		this.weightedLambda = weightedLambda;
 	}
 	
 	public void shuffle(int itr) {

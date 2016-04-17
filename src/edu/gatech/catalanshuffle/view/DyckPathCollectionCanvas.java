@@ -14,7 +14,7 @@ public class DyckPathCollectionCanvas extends CatalanModelCanvas {
 	
 	private DyckPath[] model;
 	
-	public DyckPathCollectionCanvas(int n, double width, double height, int size) {
+	public DyckPathCollectionCanvas(int n, double width, double height, double weightedLambda, int size) {
 		super(n, width, height);
 		this.model = new DyckPath[size];
 		for (int i = 0; i < size; i++) {
@@ -30,9 +30,9 @@ public class DyckPathCollectionCanvas extends CatalanModelCanvas {
 		draw();
 	}
 	
-	public void setWeighted(boolean weighted) {
+	public void setWeightedLambda(double weightedLambda) {
 		for (DyckPath m : model) {
-			m.setWeighted(weighted);
+			m.setWeightedLambda(weightedLambda);
 		}
 	}
 	

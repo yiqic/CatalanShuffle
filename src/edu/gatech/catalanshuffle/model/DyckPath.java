@@ -23,11 +23,11 @@ public class DyckPath extends CatalanModel {
 	}
 	
 	public DyckPath(int n, InitType initType) {
-		this(n, initType, false, true, false);
+		this(n, initType, false, true, 1);
 	}
 	
-	public DyckPath(int n, InitType initType, boolean lazyChain, boolean initDist, boolean weighted) {
-		super(n, weighted);
+	public DyckPath(int n, InitType initType, boolean lazyChain, boolean initDist, double weightedLambda) {
+		super(n, weightedLambda);
 		this.initType = initType;
 		this.lazyChain = lazyChain;
 		reset();
@@ -129,13 +129,14 @@ public class DyckPath extends CatalanModel {
 			firstIndexValue = cur[index2];
 		}
 		if (cur[index1] != cur[index2]) {
-			double a1 = testStatisticsValue(TestStatistics.AREA, cur);
+			double a1 = Math.pow(weightedLambda, testStatisticsValue(TestStatistics.AREA, cur));
 			cur[index1] = firstIndexValue;
 			cur[index2] = !firstIndexValue;
-			double a2 = testStatisticsValue(TestStatistics.AREA, cur);
+			int newArea = testStatisticsValue(TestStatistics.AREA, cur);
+			double a2 = Math.pow(weightedLambda, newArea);
 			// Metropolis–Hastings algorithm in order to make stationary distribution weighted by area underneath
 			double acceptProb = Math.min(1, a2/a1);
-			if (a2 < 0 || (weighted && rand.nextDouble() > acceptProb)) {
+			if (newArea < 0 || rand.nextDouble() > acceptProb) {
 				cur[index1] = !firstIndexValue;
 				cur[index2] = firstIndexValue;
 			}

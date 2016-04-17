@@ -9,7 +9,7 @@ public class DyckPathCanvas extends CatalanModelCanvas {
 	
 	private DyckPath model;
 	
-	public DyckPathCanvas(int n, double width, double height) {
+	public DyckPathCanvas(int n, double width, double height, double weightedLambda) {
 		super(n, width, height);
 		this.model = new DyckPath(n);
 		draw();
@@ -20,8 +20,8 @@ public class DyckPathCanvas extends CatalanModelCanvas {
 		draw();
 	}
 	
-	public void setWeighted(boolean weighted) {
-		model.setWeighted(weighted);
+	public void setWeightedLambda(double weightedLambda) {
+		model.setWeightedLambda(weightedLambda);
 	}
 	
 	public void reset() {

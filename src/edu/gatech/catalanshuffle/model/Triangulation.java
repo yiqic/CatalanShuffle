@@ -10,7 +10,6 @@ import java.util.Map;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
 
 import edu.gatech.catalanshuffle.model.CatalanModel.DistanceMetric;
-import edu.gatech.catalanshuffle.model.DyckPath.TestStatistics;
 
 public class Triangulation extends CatalanModel {
 	
@@ -20,11 +19,11 @@ public class Triangulation extends CatalanModel {
 	private Map<Integer, Integer>[] dist;
 	
 	public Triangulation(int n) {
-		this(n, true);
+		this(n, true, 1);
 	}
 	
-	public Triangulation(int n, boolean initDist) {
-		super(n);
+	public Triangulation(int n, boolean initDist, double weightedLambda) {
+		super(n, weightedLambda);
 		reset();
 		if (initDist) {
 			loadTestStatisticsDist();
@@ -81,29 +80,60 @@ public class Triangulation extends CatalanModel {
 		}
 	}
 	
+	private void zig(TreeNode target) {
+		TreeNode parent = target.parent;
+		TreeNode child = target.left;
+		TreeNode gchild = child.right;
+		if (parent.leaf) {
+			root = child;
+			parent.parent = child;
+		}
+		else if (parent.left == target) {
+			parent.left = child;
+		}
+		else {
+			parent.right = child;
+		}
+		target.parent = child;
+		target.left = gchild;
+		child.parent = parent;
+		child.right = target;
+		gchild.parent = target;
+	}
+	
+	private void zag(TreeNode target) {
+		TreeNode parent = target.parent;
+		TreeNode child = target.right;
+		TreeNode gchild = child.left;
+		if (parent.leaf) {
+			root = child;
+			parent.parent = child;
+		}
+		else if (parent.left == target) {
+			parent.left = child;
+		}
+		else {
+			parent.right = child;
+		}
+		target.parent = child;
+		target.right = gchild;
+		child.parent = parent;
+		child.left = target;
+		gchild.parent = target;
+	}
+	
 	public void shuffleOnce() {
 		TreeNode target = nodeMap[rand.nextInt(n)];
 		boolean leftChild = rand.nextBoolean();
+		double diagonal = Math.pow(weightedLambda, testStatisticsValue(TestStatistics.LongestDiagonal, root, null));
 		if (leftChild) {
 			if (!target.left.leaf) {
-				TreeNode parent = target.parent;
-				TreeNode child = target.left;
-				TreeNode gchild = child.right;
-				if (parent.leaf) {
-					root = child;
-					parent.parent = child;
+				zig(target);
+				double newDiagonal = Math.pow(weightedLambda, testStatisticsValue(TestStatistics.LongestDiagonal, root, null));
+				double acceptProb = Math.min(1, newDiagonal/diagonal);
+				if (rand.nextDouble() > acceptProb) {
+					zag(target.parent);
 				}
-				else if (parent.left == target) {
-					parent.left = child;
-				}
-				else {
-					parent.right = child;
-				}
-				target.parent = child;
-				target.left = gchild;
-				child.parent = parent;
-				child.right = target;
-				gchild.parent = target;
 			}
 			else {
 				shuffleOnce();
@@ -111,24 +141,12 @@ public class Triangulation extends CatalanModel {
 		}
 		else {
 			if (!target.right.leaf) {
-				TreeNode parent = target.parent;
-				TreeNode child = target.right;
-				TreeNode gchild = child.left;
-				if (parent.leaf) {
-					root = child;
-					parent.parent = child;
+				zag(target);
+				double newDiagonal = Math.pow(weightedLambda, testStatisticsValue(TestStatistics.LongestDiagonal, root, null));
+				double acceptProb = Math.min(1, newDiagonal/diagonal);
+				if (rand.nextDouble() > acceptProb) {
+					zig(target.parent);
 				}
-				else if (parent.left == target) {
-					parent.left = child;
-				}
-				else {
-					parent.right = child;
-				}
-				target.parent = child;
-				target.right = gchild;
-				child.parent = parent;
-				child.left = target;
-				gchild.parent = target;
 			}
 			else {
 				shuffleOnce();

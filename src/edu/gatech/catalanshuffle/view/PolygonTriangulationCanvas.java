@@ -13,9 +13,9 @@ public class PolygonTriangulationCanvas extends CatalanModelCanvas {
 	private double[] x;
 	private double[] y;
 	
-	public PolygonTriangulationCanvas(int n, double width, double height) {
+	public PolygonTriangulationCanvas(int n, double width, double height, double weightedLambda) {
 		super(n, width, height);
-		this.model = new Triangulation(n, false);
+		this.model = new Triangulation(n, false, weightedLambda);
 		// initialize vertices
 		this.x = new double[n+2];
 		this.y = new double[n+2];
